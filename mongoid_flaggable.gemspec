@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.rubyforge_project         = "mongoid_flaggable"
 
   # If you have other dependencies, add them here
-  s.add_dependency "mongoid", "~> 6.0.0"
+  s.add_dependency "mongoid", "~> 6.4"
 
   s.add_development_dependency "rspec", "~> 2.14"
   s.add_development_dependency "rake"
