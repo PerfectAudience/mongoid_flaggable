@@ -157,108 +157,124 @@ describe Mongoid::Flaggable do
 			m
 		end
 
-		it "should be able to add a flag to unpersisted model without saving" do
-			m = unsaved
-			m.persisted?.should be_false
-			m.flags.should == []
-			m.add_flag :flag1
-			m.flags.should == %w(flag1)
-			m.persisted?.should be_false
-		end
+    context "#add_flag" do
+		  it "should be able to add a flag to unpersisted model without saving" do
+		  	m = unsaved
+		  	m.persisted?.should be_false
+		  	m.flags.should == []
+		  	m.add_flag :flag1
+		  	m.flags.should == %w(flag1)
+		  	m.persisted?.should be_false
+		  end
 
-		it "should be able to add a flag to a persisted model without saving" do
-			m = saved
-			m.persisted?.should be_true
-			m.flags.should == []
-			m.add_flag :flag1
-			m.flags.should == %w(flag1)
-			m.reload
-			m.flags.should == []
-		end
+		  it "should be able to add a flag to a persisted model without saving" do
+		  	m = saved
+		  	m.persisted?.should be_true
+		  	m.flags.should == []
+		  	m.add_flag :flag1
+		  	m.flags.should == %w(flag1)
+		  	m.reload
+		  	m.flags.should == []
+		  end
 
-		it "should save an unpersisted model when add_flag! is called" do
-			m = unsaved
-			m.persisted?.should be_false
-			m.add_flag!(:flag1)
-			m.persisted?.should be_true
-		end
+		  it "should add flags idempotently" do
+		  	m = saved
+		  	m.add_flag(:flag1)
+		  	m.flags.should == %w(flag1)
+		  	m.add_flag(:flag1)
+		  	m.flags.should == %w(flag1)
+		  end
 
-		it "should save a persisted model when add_flag! is called" do
-			m = saved
-			m.persisted?.should be_true
-			m.flags.should == []
-			m.add_flag!(:flag1)
-			m.reload
-			m.flags.should == %w(flag1)
-		end
+		  it "should be able to return flags after they are set" do
+		  	m = saved
+		  	m.add_flag(:flag1)
+		  	m.flags.should == %w(flag1)
+		  	m.add_flag(:flag2)
+		  	m.flags.should == %w(flag1 flag2)
+		  end
+    end
 
-		it "should be able to add with either string or symbol" do
-			m1 = MyModel.create
-			m1.add_flag! :flag1
-			m2 = MyModel.create
-			m2.add_flag! "flag1"
-			m1.flags.should eq m2.flags
-		end
+    context "#add_flag!" do
+		  it "should save an unpersisted model when add_flag! is called" do
+		  	m = unsaved
+		  	m.persisted?.should be_false
+		  	m.add_flag!(:flag1)
+		  	m.persisted?.should be_true
+		  end
 
-		it "should add flags idempotently" do
-			m = saved
-			m.add_flag(:flag1)
-			m.flags.should == %w(flag1)
-			m.add_flag(:flag1)
-			m.flags.should == %w(flag1)
-		end
+		  it "should save a persisted model when add_flag! is called" do
+		  	m = saved
+		  	m.persisted?.should be_true
+		  	m.flags.should == []
+		  	m.add_flag!(:flag1)
+		  	m.reload
+		  	m.flags.should == %w(flag1)
+		  end
 
-		it "should not return error when removing a flag that isn't set" do
-			m = unsaved
-			m.flags.should == []
-			m.remove_flag :not_there
-			m.flags.should == []
-		end
+		  it "should be able to add with either string or symbol" do
+		  	m1 = MyModel.create
+		  	m1.add_flag! :flag1
+		  	m2 = MyModel.create
+		  	m2.add_flag! "flag1"
+		  	m1.flags.should eq m2.flags
+		  end
+    end
 
-		it "should be able to remove a flag" do
-			m = unsaved_with_flag
-			m.flags.should == %w(flag1)
-			m.remove_flag :flag1
-			m.flags.should be_empty
-		end
+    context "#remove_flag" do
+		  it "should not return error when removing a flag that isn't set" do
+		  	m = unsaved
+		  	m.flags.should == []
+		  	m.remove_flag :not_there
+		  	m.flags.should == []
+		  end
 
-		it "should be able to remove a flag with a string" do
-			m = unsaved_with_flag
-			m.flags.should == %w(flag1)
-			m.remove_flag("flag1")
-			m.flags.should be_empty
-		end
+		  it "should be able to remove a flag" do
+		  	m = unsaved_with_flag
+		  	m.flags.should == %w(flag1)
+		  	m.remove_flag :flag1
+		  	m.flags.should be_empty
+		  end
 
-		it "should be able to remove a flag with a symbol" do
-			m = unsaved_with_flag
-			m.flags.should == %w(flag1)
-			m.remove_flag(:flag1)
-			m.flags.should be_empty
-		end
+		  it "should be able to remove a flag with a string" do
+		  	m = unsaved_with_flag
+		  	m.flags.should == %w(flag1)
+		  	m.remove_flag("flag1")
+		  	m.flags.should be_empty
+		  end
 
-		it "should be able to remove a flag without saving" do
-			m = unsaved_with_flag
-			m.persisted?.should be_false
-			m.remove_flag(:flag1)
-			m.persisted?.should be_false
-		end
+		  it "should be able to remove a flag with a symbol" do
+		  	m = unsaved_with_flag
+		  	m.flags.should == %w(flag1)
+		  	m.remove_flag(:flag1)
+		  	m.flags.should be_empty
+		  end
 
-		it "should be able to remove a flag from a persisted document and immediately save" do
-			m = saved_with_flag
-			m.flags.should == %w(flag1)
-			m.remove_flag! :flag1
-			m.reload
-			m.flags.should be_empty
-		end
+		  it "should be able to remove a flag without saving" do
+		  	m = unsaved_with_flag
+		  	m.persisted?.should be_false
+		  	m.remove_flag(:flag1)
+		  	m.persisted?.should be_false
+		  end
 
-		it "should remove flags idempotently" do
-			m = dual_citizenship
-			m.flags.should == %w(flag1 flag2)
-			m.remove_flag(:flag2)
-			m.flags.should == %w(flag1)
-			m.remove_flag(:flag2)
-			m.flags.should == %w(flag1)
-		end
+		  it "should remove flags idempotently" do
+		  	m = dual_citizenship
+		  	m.flags.should == %w(flag1 flag2)
+		  	m.remove_flag(:flag2)
+		  	m.flags.should == %w(flag1)
+		  	m.remove_flag(:flag2)
+		  	m.flags.should == %w(flag1)
+		  end
+    end
+
+    context "#remove_flag!" do
+		  it "should be able to remove a flag from a persisted document and immediately save" do
+		  	m = saved_with_flag
+		  	m.flags.should == %w(flag1)
+		  	m.remove_flag! :flag1
+		  	m.reload
+		  	m.flags.should be_empty
+		  end
+    end
 
 		it "should be able to clear all flags" do
 			m = dual_citizenship
@@ -269,14 +285,6 @@ describe Mongoid::Flaggable do
 			m.flags.should be_empty
 		end
 
-		it "should be able to return flags after they are set" do
-			m = saved
-			m.add_flag(:flag1)
-			m.flags.should == %w(flag1)
-			m.add_flag(:flag2)
-			m.flags.should == %w(flag1 flag2)
-		end
-
 		it "should be able to test for the existence of a single flag" do
 			m = saved
 			m.flag?(:flag1).should be_false
@@ -284,6 +292,50 @@ describe Mongoid::Flaggable do
 			m = saved_with_flag
 			m.flag?(:flag1).should be_true
 		end
+
+    context "#toggle_flag" do
+      it "should add a flag when one does not exist" do
+        m = unsaved
+        m.toggle_flag :flag1
+        m.flags.should == %w(flag1)
+      end
+
+      it "should remove a flag when one does exist" do
+        m = unsaved
+        m.add_flag :flag1
+        m.flags.should == %w(flag1)
+        m.toggle_flag :flag1
+        m.flags.should == []
+      end
+
+      it "should not persist an unsaved document" do
+        m = unsaved
+        m.toggle_flag :flag1
+        m.persisted?.should be_false
+      end
+    end
+
+    context "#toggle_flag!" do
+      it "should add a flag when one does not exist" do
+        m = unsaved
+        m.toggle_flag! :flag1
+        m.flags.should == %w(flag1)
+      end
+
+      it "should remove a flag when one does exist" do
+        m = unsaved
+        m.add_flag :flag1
+        m.flags.should == %w(flag1)
+        m.toggle_flag! :flag1
+        m.flags.should == []
+      end
+
+      it "should persist an unsaved document" do
+        m = unsaved
+        m.toggle_flag! :flag1
+        m.persisted?.should be_true
+      end
+    end
 
 		it "should be able to test for the existence of multiple (OR) flags" do
 			m = saved_with_flag
