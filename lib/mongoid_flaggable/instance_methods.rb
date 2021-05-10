@@ -22,6 +22,20 @@ module Mongoid
 				save
 			end
 
+      def toggle_flag(flag)
+        return remove_flag(flag) if flag?(flag)
+        add_flag(flag)
+      end
+
+      def toggle_flag!(flag)
+        if flag?(flag)
+          remove_flag(flag)
+          return save
+        end
+        add_flag(flag)
+        save
+      end
+
 			def clear_flags
 				self.flag_array = []
 			end
